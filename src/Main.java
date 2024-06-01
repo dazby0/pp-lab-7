@@ -9,6 +9,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class Main extends Application {
 
@@ -52,42 +54,48 @@ public class Main extends Application {
         }
     }
 
+    private boolean containsPhrase(File file, String searchPhrase) throws IOException {
+        try {
+            return Files.lines(file.toPath()).anyMatch(line -> line.contains(searchPhrase));
+        } catch (IOException e) {
+            throw new IOException("Error reading file: " + file.getAbsolutePath(), e);
+        }
+    }
+
     private void searchFiles() {
         String directoryPath = directoryPathField.getText().trim();
         String searchPhrase = searchField.getText().trim();
-    
+
         if (directoryPath.isEmpty()) {
             resultArea.setText("Please provide a directory path.");
             return;
         }
-    
+
         File directory = new File(directoryPath);
         if (!directory.isDirectory()) {
             resultArea.setText("The provided path is not a directory.");
             return;
         }
-    
-        File[] files = directory.listFiles((dir, name) -> name.contains(searchPhrase));
-        if (files != null) {
-            StringBuilder results = new StringBuilder();
-            for (File file : files) {
-                results.append(file.getAbsolutePath()).append("\n");
-            }
-            resultArea.setText(results.toString());
-        } else {
-            resultArea.setText("No files found matching the search phrase.");
-        }
-    }
-    
 
-    private void listFilesInDirectory(File directory, StringBuilder results) {
+        StringBuilder results = new StringBuilder();
+        searchInDirectory(directory, searchPhrase, results);
+        resultArea.setText(results.toString());
+    }
+
+    private void searchInDirectory(File directory, String searchPhrase, StringBuilder results) {
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    listFilesInDirectory(file, results);
+                    searchInDirectory(file, searchPhrase, results);
                 } else {
-                    results.append(file.getAbsolutePath()).append("\n");
+                    try {
+                        if (containsPhrase(file, searchPhrase)) {
+                            results.append(file.getAbsolutePath()).append("\n");
+                        }
+                    } catch (IOException e) {
+                        results.append("Error reading file: ").append(file.getAbsolutePath()).append("\n");
+                    }
                 }
             }
         }
