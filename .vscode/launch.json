@@ -12,10 +12,10 @@
     },
     {
       "type": "java",
-      "name": "App",
+      "name": "Main",
       "request": "launch",
       "vmArgs": "--module-path c:\\javafx-sdk-22.0.1\\lib --add-modules javafx.controls,javafx.fxml",
-      "mainClass": "App",
+      "mainClass": "Main",
       "projectName": "pplab7_c819f999"
     }
   ]
